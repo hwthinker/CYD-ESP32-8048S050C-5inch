@@ -112,13 +112,37 @@ Serial monitor (opsional): `pio device monitor`
 
 ## Membuat UI sendiri
 
-Ganti isi `setup()` di `src/main.cpp`: hapus `lv_demo_widgets();` dan buat widget LVGL sendiri, misalnya:
+Ganti **hanya** `lv_demo_widgets();` di `src/main.cpp` dengan widget buatan sendiri. `smartdisplay_init()` dan `smartdisplay_lcd_set_backlight()` **wajib tetap ada** — keduanya yang menginisialisasi LVGL, panel LCD, touch, dan menyalakan backlight.
 
 ```cpp
-lv_obj_t *label = lv_label_create(lv_screen_active());
-lv_label_set_text(label, "Halo dari ESP32-S3!");
-lv_obj_center(label);
+#include <Arduino.h>
+#include <esp32_smartdisplay.h>
+// #include <demos/lv_demos.h>   // tidak perlu kalau tidak memakai demo
+
+void setup()
+{
+    Serial.begin(115200);
+
+    smartdisplay_init();                  // WAJIB
+    smartdisplay_lcd_set_backlight(1.0f); // WAJIB (kecerahan penuh)
+
+    lv_obj_t *label = lv_label_create(lv_screen_active());
+    lv_label_set_text(label, "Halo dari ESP32-S3!");
+    lv_obj_center(label);
+}
+
+auto lv_last_tick = millis();
+
+void loop()
+{
+    auto const now = millis();
+    lv_tick_inc(now - lv_last_tick);
+    lv_last_tick = now;
+    lv_timer_handler();
+}
 ```
+
+> ⚠️ Kalau `smartdisplay_init()` ikut dihapus/dikomentari, layar akan **gelap**: LVGL belum di-`init`, panel belum dibuat, dan backlight tidak menyala.
 
 Jika demo tidak dipakai lagi, hapus folder `src/lvgl_demo/` dan set `LV_BUILD_DEMOS 0` di `include/lv_conf.h` agar firmware lebih kecil.
 
