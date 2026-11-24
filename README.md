@@ -28,6 +28,15 @@ Project ini siap pakai dengan **PlatformIO**: clone → build → upload, tanpa 
 
 Kalau hanya ingin mem-flash board tanpa install VS Code/PlatformIO, gunakan folder [`firmware/`](firmware/). Di dalamnya sudah ada `firmware-merged.bin` (siap flash di alamat `0x0`), binary pendukung, script bantu, dan panduan lengkap esptool: **[firmware/README.md](firmware/README.md)**.
 
+## Dua environment PlatformIO
+
+| Env | Isi | Perintah upload |
+|---|---|---|
+| `esp32-8048S050C` (**default**) | Demo LVGL Widgets "Elena Smith" (`src/main.cpp`) | `pio run -t upload --upload-port COM33` |
+| `simple_demo` | Label sederhana "Halo dari ESP32-S3!" (`src/simple_demo.cpp`) | `pio run -e simple_demo -t upload --upload-port COM33` |
+
+Kalau `-e` tidak ditulis, PlatformIO memakai env default. Folder [`firmware/`](firmware/) tetap berisi **demo Widgets** (bukan `simple_demo`).
+
 ## Langkah-langkah
 
 ### 1. Download project
@@ -106,13 +115,14 @@ Serial monitor (opsional): `pio device monitor`
 │   └── lv_conf.h               # konfigurasi LVGL (demo widgets aktif)
 ├── lib/esp32_smartdisplay/     # driver LCD + touch (sudah di-patch, lihat bawah)
 └── src/
-    ├── main.cpp                # init display + lv_demo_widgets()
+    ├── main.cpp                # env default: init display + lv_demo_widgets()
+    ├── simple_demo.cpp         # env simple_demo: contoh UI label sederhana
     └── lvgl_demo/              # wrapper agar source demo LVGL ikut di-compile
 ```
 
 ## Membuat UI sendiri
 
-Ganti **hanya** `lv_demo_widgets();` di `src/main.cpp` dengan widget buatan sendiri. `smartdisplay_init()` dan `smartdisplay_lcd_set_backlight()` **wajib tetap ada** — keduanya yang menginisialisasi LVGL, panel LCD, touch, dan menyalakan backlight.
+Ganti **hanya** `lv_demo_widgets();` di `src/main.cpp` dengan widget buatan sendiri. `smartdisplay_init()` dan `smartdisplay_lcd_set_backlight()` **wajib tetap ada** — keduanya yang menginisialisasi LVGL, panel LCD, touch, dan menyalakan backlight. Contoh lengkap yang sudah siap dipakai ada di [`src/simple_demo.cpp`](src/simple_demo.cpp) (env `simple_demo`).
 
 ```cpp
 #include <Arduino.h>
